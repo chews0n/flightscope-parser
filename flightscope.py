@@ -69,15 +69,11 @@ def parse_arguments():
 
     # add arguments to the parser
     parser.add_argument("--csvfile", type=str, nargs='?', default='golfuture_session.csv', dest='csv_file',
-                        help="Input file for the input to the model predictor.")
+                        help="Input file for the input to the flightscope data")
 
     parser.add_argument("--player", type=str, nargs='?', dest='player',
-                        const=True, default='Player 2',
-                        help="Run Retraining of the model.")
-
-    parser.add_argument("--club", type=str, nargs='?', dest='club',
-                        const=True, default=True,
-                        help="Run the prediction mode. This is done after training if this was set to true.")
+                        const=True, default='Player 1',
+                        help="Specifiy the name of the player for the results")
 
     # parse the arguments
     args = parser.parse_args()
