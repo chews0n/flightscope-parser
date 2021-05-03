@@ -53,7 +53,7 @@ def print_summary(sum_text, pdf_list, player, club):
     pdf.add_page()
     # set style and size of font
     # that you want in the pdf
-    pdf.set_font("Arial", size=15)
+    pdf.set_font("Arial", size=12)
 
     # open the text file in read mode
     f = open("summary.txt", "r")
@@ -96,6 +96,24 @@ def merge_pdfs(pdfs, player_name):
     for pdf in pdfs:
         os.remove(pdf)
 
+def create_table_values(params_list, newfilt):
+
+    data = []
+
+    for params in params_list:
+        tmp = []
+
+        tmp.append(params)
+        tmp.append(newfilt[params].count())
+        tmp.append(newfilt[params].mean())
+        tmp.append(newfilt[params].median())
+        tmp.append(newfilt[params].max())
+        tmp.append(newfilt[params].min())
+        tmp.append(newfilt[params].quantile(0.9))
+
+        data.append(tmp)
+
+    return data
 
 def main():
     pd.options.display.float_format = '{:.lf}'.format
@@ -155,23 +173,18 @@ def main():
                 newdf['XHeight'] = xpos_list
                 newdf['YHeight'] = ypos_list
 
-                newfilt = newdf.filter(['CarryDistance', 'LateralDistance', 'Height', 'Distance', 'XHeight', 'YHeight'],
+                newfilt = newdf.filter(['CarryDistance', 'LateralDistance', 'Height', 'Distance', 'XHeight', 'YHeight', 'TotalDistance', 'ClubSpeed', 'BallSpeed', 'SmashFactor', 'TotalSpin'],
                                        axis=1)
 
-                mean = newfilt.CarryDistance.mean()
-                median = newfilt.CarryDistance.median()
-                max = newfilt.CarryDistance.max()
-                min = newfilt.CarryDistance.min()
-                count = newfilt.CarryDistance.count()
-                p90 = newfilt.CarryDistance.quantile(0.9)
+                collabel = ("Param", "Count", "Mean", "Median", "Max", "Min", "90th Perecent")
+                params_list = ['CarryDistance', 'TotalDistance', 'ClubSpeed', 'BallSpeed', 'SmashFactor', 'TotalSpin']
+
+                data = create_table_values(params_list, newfilt)
 
                 maxlat = newfilt.LateralDistance.max()
                 minlat = newfilt.LateralDistance.min()
 
                 maxheight = newfilt.Height.max()
-
-                textstr = "Carry Distance for {} \nCount: {} \nMean: {:.0f} \nMedian: {:.0f} \nMax: {:.0f} \nMin: {:.0f} \n90th " \
-                          "Percentile: {:.0f}\n".format(club, count, mean, median, max, min, p90)
 
                 fig = plt.figure()
 
@@ -182,7 +195,7 @@ def main():
                     zlist = [0.0, row['Height'], 0.0]
                     ax.plot3D(xlist, ylist, zlist, 'orange')
 
-                ax.set_ylim3d(0, max * 1.05)
+                ax.set_ylim3d(0, data[0][4] * 1.05)
                 ax.set_zlim3d(0, maxheight * 1.05)
 
                 ax.set_xlabel("Lateral Distance [yds]")
@@ -200,7 +213,22 @@ def main():
                 plt.savefig(f'{player_name}-{club}.pdf', format='pdf')
                 pdf_list.append(f'{player_name}-{club}.pdf')
 
-                print_summary(textstr, pdf_list, player_name, club)
+                plt.close()
+
+                fig2, ax2 = plt.subplots()
+
+                fig2.patch.set_visible(False)
+                ax2.axis('off')
+                ax2.axis('tight')
+
+                plt.title(club)
+
+                the_table = ax2.table(cellText=data, colLabels=collabel, loc='center')
+                plt.savefig(f'{player_name}-{club}-sum.pdf', format='pdf')
+                pdf_list.append(f'{player_name}-{club}-sum.pdf')
+
+                plt.close()
+
 
         merge_pdfs(pdf_list, player_name)
 
