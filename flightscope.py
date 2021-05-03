@@ -7,6 +7,7 @@ import numpy as np
 from math import pi, sin, cos
 from PyPDF2 import PdfFileMerger
 from fpdf import FPDF
+pd.options.mode.chained_assignment = None
 
 CLUBS = ["1-Iron", "2-Iron", "3-Iron", "4-Iron", "5-Iron", "6-Iron", "7-Iron", "8-Iron", "9-Iron", "P-Wedge", "G-Wedge",
          "S-Wedge", "3-Wood", "Driver"]
