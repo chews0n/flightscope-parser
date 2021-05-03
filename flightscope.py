@@ -37,7 +37,6 @@ class Projectile:
         # position along the carry distance where the max height is
         self.xpos = self.xvel * self.time * m_to_yards
 
-
 def read_csv(csv_file):
     df = pd.read_csv(csv_file)
 
@@ -119,9 +118,6 @@ def main():
                 height_list = []
                 xpos_list = []
                 ypos_list = []
-
-                lat_list = []
-                dist_list = []
 
                 newdf['Distance'] = np.sqrt(np.square(newdf.CarryDistance) - np.square(newdf.LateralDistance))
                 for index, row in newdf.iterrows():
