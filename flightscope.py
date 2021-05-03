@@ -45,7 +45,10 @@ def read_csv(csv_file):
 
     return df
 
-def printSummary(sum_text):
+def printSummary(sum_text, pdf_list, player, club):
+
+    with open("summary.txt", "w") as text_file:
+        text_file.write(sum_text)
     pdf = FPDF()
     pdf.add_page()
     # set style and size of font
@@ -60,7 +63,11 @@ def printSummary(sum_text):
         pdf.cell(200, 10, txt=x, ln=1, align='C')
 
     # save the pdf with name .pdf
-    pdf.output('summary.pdf', 'F')
+    pdf.output(f'{player}-{club}-sum.pdf', 'F')
+
+    pdf_list.append(f'{player}-{club}-sum.pdf')
+
+    os.remove("summary.txt")
 
 def parse_arguments():
     # create parser
@@ -98,7 +105,6 @@ def main():
     args = parse_arguments()
 
     pdf_list = []
-    textstr = ""
 
     if os.path.isfile(args.csv_file):
         # read in the file to a CSV file
@@ -162,7 +168,7 @@ def main():
 
                 maxheight = newfilt.Height.max()
 
-                textstr += "Carry Distance for {} \nCount: {} \nMean: {:.0f} \nMedian: {:.0f} \nMax: {:.0f} \nMin: {:.0f} \n90th " \
+                textstr = "Carry Distance for {} \nCount: {} \nMean: {:.0f} \nMedian: {:.0f} \nMax: {:.0f} \nMin: {:.0f} \n90th " \
                           "Percentile: {:.0f}\n".format(club, count, mean, median, max, min, p90)
 
                 fig = plt.figure()
@@ -192,17 +198,11 @@ def main():
                 plt.savefig(f'{args.player}-{club}.pdf', format='pdf')
                 pdf_list.append(f'{args.player}-{club}.pdf')
 
+                printSummary(textstr, pdf_list, args.player, club)
+
     else:
         print(f"Unable to find the file {args.csv_file}")
         sys.exit(1)
-
-    with open("summary.txt", "w") as text_file:
-        text_file.write(textstr)
-
-    printSummary(textstr)
-    pdf_list.append('summary.pdf')
-
-    os.remove("summary.txt")
 
     merge_pdfs(pdf_list, args.player)
 
