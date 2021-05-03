@@ -9,9 +9,6 @@ from PyPDF2 import PdfFileMerger
 from fpdf import FPDF
 pd.options.mode.chained_assignment = None
 
-CLUBS = ["1-Iron", "2-Iron", "3-Iron", "4-Iron", "5-Iron", "6-Iron", "7-Iron", "8-Iron", "9-Iron", "P-Wedge", "G-Wedge",
-         "S-Wedge", "3-Wood", "Driver"]
-
 grav_accel = 9.80665
 m_to_yards = 1.09361
 mph_to_mpersec = 0.44704
@@ -79,10 +76,6 @@ def parse_arguments():
     parser.add_argument("--csvfile", type=str, nargs='?', default='golfuture_session.csv', dest='csv_file',
                         help="Input file for the input to the flightscope data")
 
-    parser.add_argument("--player", type=str, nargs='?', dest='player',
-                        const=True, default='Player 1',
-                        help="Specifiy the name of the player for the results")
-
     # parse the arguments
     args = parser.parse_args()
     return args
@@ -105,15 +98,21 @@ def main():
 
     args = parse_arguments()
 
-    pdf_list = []
+    if not os.path.isfile(args.csv_file):
+        print(f"Unable to find the file {args.csv_file}")
+        sys.exit(1)
 
-    if os.path.isfile(args.csv_file):
-        # read in the file to a CSV file
-        df = read_csv(args.csv_file)
+    # read in the file to a CSV file
+    df = read_csv(args.csv_file)
 
-        for club in CLUBS:
+    player_list = df.Player.unique()
+    club_list = df.Club.unique()
+    for player_name in player_list:
+        pdf_list = []
 
-            newdf = df[(df.Player == args.player) & (df.Club == club)]
+        for club in club_list:
+
+            newdf = df[(df.Player == player_name) & (df.Club == club)]
 
             # plot the carry and the lateral spread
             if newdf.size > 0:
@@ -196,16 +195,12 @@ def main():
                     ax.set_xlim3d(-abs(minlat) * 1.05, abs(minlat) * 1.05)
 
                 plt.title(club)
-                plt.savefig(f'{args.player}-{club}.pdf', format='pdf')
-                pdf_list.append(f'{args.player}-{club}.pdf')
+                plt.savefig(f'{player_name}-{club}.pdf', format='pdf')
+                pdf_list.append(f'{player_name}-{club}.pdf')
 
-                printSummary(textstr, pdf_list, args.player, club)
+                printSummary(textstr, pdf_list, player_name, club)
 
-    else:
-        print(f"Unable to find the file {args.csv_file}")
-        sys.exit(1)
-
-    merge_pdfs(pdf_list, args.player)
+        merge_pdfs(pdf_list, player_name)
 
 if __name__ == "__main__":
     main()
