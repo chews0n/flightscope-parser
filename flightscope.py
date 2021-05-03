@@ -7,25 +7,27 @@ import numpy as np
 from math import pi, sin, cos
 from PyPDF2 import PdfFileMerger
 from fpdf import FPDF
+
 pd.options.mode.chained_assignment = None
 
 grav_accel = 9.80665
 m_to_yards = 1.09361
 mph_to_mpersec = 0.44704
 
+
 class Projectile:
 
     def __init__(self, angle, velocity):
         self.xpos = 0.0
         self.ypos = 0.0
-        theta = pi*angle/180.0
-        self.xvel = mph_to_mpersec*velocity*cos(theta)
-        self.yvel = mph_to_mpersec*velocity*sin(theta)
+        theta = pi * angle / 180.0
+        self.xvel = mph_to_mpersec * velocity * cos(theta)
+        self.yvel = mph_to_mpersec * velocity * sin(theta)
         self.maxheight = 0.0
         self.time = 0.0
 
     def maxHeight(self):
-        self.maxheight = m_to_yards * (self.yvel**2)/(2*grav_accel)
+        self.maxheight = m_to_yards * (self.yvel ** 2) / (2 * grav_accel)
         self.getTime()
         self.getX()
         return self.maxheight, self.xpos
@@ -37,13 +39,14 @@ class Projectile:
         # position along the carry distance where the max height is
         self.xpos = self.xvel * self.time * m_to_yards
 
+
 def read_csv(csv_file):
     df = pd.read_csv(csv_file)
 
     return df
 
-def printSummary(sum_text, pdf_list, player, club):
 
+def print_summary(sum_text, pdf_list, player, club):
     with open("summary.txt", "w") as text_file:
         text_file.write(sum_text)
     pdf = FPDF()
@@ -66,6 +69,7 @@ def printSummary(sum_text, pdf_list, player, club):
 
     os.remove("summary.txt")
 
+
 def parse_arguments():
     # create parser
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -79,8 +83,8 @@ def parse_arguments():
     args = parser.parse_args()
     return args
 
-def merge_pdfs(pdfs, player_name):
 
+def merge_pdfs(pdfs, player_name):
     merger = PdfFileMerger()
 
     for pdf in pdfs:
@@ -91,6 +95,7 @@ def merge_pdfs(pdfs, player_name):
 
     for pdf in pdfs:
         os.remove(pdf)
+
 
 def main():
     pd.options.display.float_format = '{:.lf}'.format
@@ -150,7 +155,8 @@ def main():
                 newdf['XHeight'] = xpos_list
                 newdf['YHeight'] = ypos_list
 
-                newfilt = newdf.filter(['CarryDistance', 'LateralDistance', 'Height', 'Distance', 'XHeight', 'YHeight'], axis=1)
+                newfilt = newdf.filter(['CarryDistance', 'LateralDistance', 'Height', 'Distance', 'XHeight', 'YHeight'],
+                                       axis=1)
 
                 mean = newfilt.CarryDistance.mean()
                 median = newfilt.CarryDistance.median()
@@ -176,16 +182,16 @@ def main():
                     zlist = [0.0, row['Height'], 0.0]
                     ax.plot3D(xlist, ylist, zlist, 'orange')
 
-                ax.set_ylim3d(0, max*1.05)
-                ax.set_zlim3d(0, maxheight*1.05)
+                ax.set_ylim3d(0, max * 1.05)
+                ax.set_zlim3d(0, maxheight * 1.05)
 
                 ax.set_xlabel("Lateral Distance [yds]")
                 ax.set_ylabel("Distance [yds]")
                 ax.set_zlabel("Height [yds]")
 
                 if abs(maxlat) > abs(minlat):
-                    # use the maxlat for the axis
-                    ax.set_xlim3d(-abs(maxlat)*1.05, abs(maxlat)*1.05)
+                    # use the max lat for the axis
+                    ax.set_xlim3d(-abs(maxlat) * 1.05, abs(maxlat) * 1.05)
                 else:
                     # use the min lat for the axis
                     ax.set_xlim3d(-abs(minlat) * 1.05, abs(minlat) * 1.05)
@@ -194,9 +200,10 @@ def main():
                 plt.savefig(f'{player_name}-{club}.pdf', format='pdf')
                 pdf_list.append(f'{player_name}-{club}.pdf')
 
-                printSummary(textstr, pdf_list, player_name, club)
+                print_summary(textstr, pdf_list, player_name, club)
 
         merge_pdfs(pdf_list, player_name)
+
 
 if __name__ == "__main__":
     main()
