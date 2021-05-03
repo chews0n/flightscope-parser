@@ -46,30 +46,6 @@ def read_csv(csv_file):
     return df
 
 
-def print_summary(sum_text, pdf_list, player, club):
-    with open("summary.txt", "w") as text_file:
-        text_file.write(sum_text)
-    pdf = FPDF()
-    pdf.add_page()
-    # set style and size of font
-    # that you want in the pdf
-    pdf.set_font("Arial", size=12)
-
-    # open the text file in read mode
-    f = open("summary.txt", "r")
-
-    # insert the texts in pdf
-    for x in f:
-        pdf.cell(200, 10, txt=x, ln=1, align='C')
-
-    # save the pdf with name .pdf
-    pdf.output(f'{player}-{club}-sum.pdf', 'F')
-
-    pdf_list.append(f'{player}-{club}-sum.pdf')
-
-    os.remove("summary.txt")
-
-
 def parse_arguments():
     # create parser
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
